@@ -10,8 +10,9 @@ function randomHash() {
   return crypto.randomBytes(8).toString('hex');
 }
 
-function hashifyLine(path, assetType) {
-  var url = [path, randomHash(), '.', assetType].join('');
+function hashifyLine(path, fileName, assetType) {
+  var fileName = fileName + '_' +randomHash();
+  var url = [path, fileName, '.', assetType].join('');
   return '<!-- build:' + assetType + ' ' + url + ' -->';
 }
 
@@ -36,9 +37,10 @@ module.exports = function(options) {
     }
 
     var contents = file.contents.toString().split('\n').map(function (line) {
-      if (matches = line.match(/<!--\s*build:(\w+)(?:\(([^\)]+)\))?\s*([^\s]+)?\s*-->/)) {
+      if (matches = line.match(/<!--\s*build:(\w+)(?:\(([^\)]+)\))?\s*((.+)\/([^\/]+))?\s*-->/)) {
         extension = matches[1];
-        line = hashifyLine(options.paths[extension], extension);
+        name = _.first(_.last(matches).split("."))
+        line = hashifyLine(options.paths[extension], name, extension);
       }
       return line;
     }).join('\n');
